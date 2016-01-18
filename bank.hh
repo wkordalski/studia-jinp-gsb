@@ -1,6 +1,8 @@
 #ifndef _GSB_BANK_HH_
 #define _GSB_BANK_HH_
 
+#include "accounts.hh"
+
 class AccountSettings {
 	double monthly_charge = 0.;
 	double transfer_charge = 0.;
@@ -21,6 +23,19 @@ protected:
 public:
 	Bank(std::string name, AccountSettings checking, AccountSettings saving, AccountSettings currency) :
 		_name(name), checking(checking), saving(saving), currency(currency) {}
+
+	//TODO dopisać klasę currency
+	CheckingAccount openCheckingAccount(const Being &who) {
+
+	} 
+	
+	SavingAccount openSavingAccount(const Being &who) {
+
+	}
+
+	CurrencyAccount openCurrencyAccount(const Being &who) {
+
+	}
 };
 
 
