@@ -6,6 +6,7 @@
 class Bank {
 protected:
 	std::string _name;
+	std::vector<Account> accounts;
 	AccountSettings checking;
 	AccountSettings saving;
 	AccountSettings currency;
@@ -15,15 +16,15 @@ public:
 
 	//TODO dopisać klasę currency
 	CheckingAccount openCheckingAccount(const Being &who) {
-
+		accounts.push_back(CheckingAccount(accounts.size(), *this));
 	} 
 	
 	SavingAccount openSavingAccount(const Being &who) {
-
+		accounts.push_back(SavingAccount(accounts.size(), *this));
 	}
 
 	CurrencyAccount openCurrencyAccount(const Being &who) {
-
+		accounts.push_back(CurrencyAccount(accounts.size(), *this));
 	}
 };
 

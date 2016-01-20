@@ -7,6 +7,8 @@
 #include "bank.hh"
 #include <ostream>
 
+class Bank;
+
 class AccountSettings {
 	double monthly_charge = 0.;
 	double transfer_charge = 0.;
@@ -20,14 +22,20 @@ public:
 
 class Account {
 	private:
-		AccountSettings acc_settings;
+		//AccountSettings acc_settings;
 		//TODO informacje o właścicielu konta?
-		id_type _id;
 	protected:
-		double balance;
+		id_type _id;
+		double _balance;
+		const Bank &_bank;
 	public:
-		double giveBalance() const { return balance; }
-		id_type id() { return _id; }
+		Account(id_type id, const Bank &bank) : 
+			id_type(id),
+			_balance(0.0),
+			_bank(bank) {}
+	
+		double giveBalance() const { return _balance; }
+		id_type id() const { return _id; }
 };
 
 	/*
@@ -53,6 +61,9 @@ std::ostream &operator<<(std::ostream &os, const Account &acc) {
 
 class TransferAccount : public Account {
 	public:
+		TransferAccount(id_type id, const Bank &bank) :
+			Account(id, bank) {}
+		
 		void transfer(double amount /*, currency_type curr = default currency*/) {
 			/*
 			* Jak sprawić, żeby Transfer zmieniał stan innego konta?
@@ -63,6 +74,9 @@ class TransferAccount : public Account {
 
 class WithdrawAccount : public Account {
 	public:
+		TransferAccount(id_type id, const Bank &bank) :
+			Account(id, bank) {}
+
 		void withdraw(double amount /*, currency_type curr = default currency*/) {
 			if (amount > balance)
 				;/*throw wherewithalNotEnoughException()*/
@@ -73,39 +87,22 @@ class WithdrawAccount : public Account {
 
 class CheckingAccount : public TransferAccount, public WithdrawAccount {
 	public:
+		CheckingAccount(id_type id, const Bank &bank) :
+			TransferAccount(id, bank) {}
+
 		void deposit(double amount /*, currency_type curr = default currency*/) {
 };
 
-class SavingAccount : public WithdrawAccount {};
-
-class CurrencyAccount : public TransferAccount {};
-
-/*
-class CheckingAccount : public Account {
+class SavingAccount : public WithdrawAccount {
 	public:
-		//TODO napisać, co właściwie robią te funkcje
-		void deposit(double amount, Currency curr = Currency::ENC ) {
-
-		}
-		void withdraw(double amount, Currency curr = Currency::ENC) {
-
-		}
-		
-		void transfer(double amount, id_type where_to , const std::string &msg = "") {
-			
-		}
+		SavingAccount(id_type id, const Bank &bank) :
+			WithdrawAccount(id, bank) {}
 };
 
-class SavingAccount : public Account {
+class CurrencyAccount : public TransferAccount {
 	public:
-		void transfer(double amount, id_type where_to, const std::string &msg = "") {
-
-		}
+		CurrencyAccount(id_type id, const Bank &bank) :
+			TransferAccount(id, bank) {}
 };
 
-class CurrencyAccount : public Account {
-	public:
-		void withdraw(double amount)
-};
-*/
 #endif /* ! _GCB_ACCOUNTS_GG_ */
