@@ -21,7 +21,7 @@ public:
 			throw beingNotFoundException();
 	}
 	virtual Being & findCitizen(id_type id) = 0;
-	
+
 protected:
 	std::map<std::string, id_type> id_by_name;
 };
@@ -36,7 +36,7 @@ public:
 		auto id = counter++;
 		return registered_beings[id] = BeingT(id, name);
 	}
-	
+
 	virtual BeingT & findCitizen(id_type id) {
 		auto it = registered_beings.find(id);
 		if(it != registered_beings.end())
@@ -57,10 +57,10 @@ public:
 		auto id = counter++;
 		return registered_beings[id] = SingleBinarius(id, name);
 	}
-	
+
 	virtual Binarius & registerCitizen(Binarius & b0, Binarius & b1) {
 		auto id = counter++;
-		return registered_beings[id] = BinariusComposite(id, b0, b1);
+		return registered_beings[id] = CompositeBinarius(id, b0, b1);
 	}
 };
 
