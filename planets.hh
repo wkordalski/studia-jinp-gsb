@@ -21,47 +21,72 @@ public:
 			throw beingNotFoundException();
 	}
 	virtual Being & findCitizen(id_type id) = 0;
-	
+
 protected:
 	std::map<std::string, id_type> id_by_name;
 };
 
 template<typename BeingT>
-class PlanetMixin : Planet {
+class SimplePlanetMixin : Planet {
 protected:
-	std::map<id_type, BeingT> registered_beings;
+	std::map<id_type, BeingT*> registered_beings;
 	id_type counter = 0;
 public:
+	virtual ~SimplePlanetMixin() {
+		for(auto p : registered_beings) {
+			delete p.second;
+		}
+	}
+
 	virtual BeingT & registerCitizen(std::string name) {
 		auto id = counter++;
-		return registered_beings[id] = BeingT(id, name);
+		return *(registered_beings[id] = new BeingT(id, name));
 	}
-	
+
 	virtual BeingT & findCitizen(id_type id) {
 		auto it = registered_beings.find(id);
 		if(it != registered_beings.end())
-			return it->second;
+			return *(it->second);
 		else
 			throw beingNotFoundException();
 	}
 };
 
-class Earth : public PlanetMixin<Human> {
+class Earth : public SimplePlanetMixin<Human> {
 };
 
-class Kronos : public PlanetMixin<Klingon> {
+class Kronos : public SimplePlanetMixin<Klingon> {
 };
-class Bajnaus : public PlanetMixin<Binarius> {
+class Bajnaus : public Planet {
+protected:
+	std::map<id_type, Binarius *> registered_beings;
+	id_type counter = 0;
 public:
+	~Bajnaus() {
+		for(auto p : registered_beings) {
+			delete p.second;
+		}
+	}
+
 	virtual Binarius & registerCitizen(std::string name) {
 		auto id = counter++;
-		return registered_beings[id] = SingleBinarius(id, name);
+		return *(registered_beings[id] = new SingleBinarius(id, name));
 	}
-	
+
 	virtual Binarius & registerCitizen(Binarius & b0, Binarius & b1) {
 		auto id = counter++;
-		return registered_beings[id] = BinariusComposite(id, b0, b1);
+		return *(registered_beings[id] = new CompositeBinarius(id, b0, b1));
 	}
+
+	virtual Binarius & findCitizen(id_type id) {
+		auto it = registered_beings.find(id);
+		if(it != registered_beings.end())
+			return *(it->second);
+		else
+			throw beingNotFoundException();
+	}
+
+
 };
 
 Earth & earth() {
