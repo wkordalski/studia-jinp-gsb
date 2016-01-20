@@ -35,14 +35,14 @@ public:
 
 class Binarius : public Being { //component
 public:
-	Binarius(id_type id) : Being(id) {}
+	Binarius(id_type id, const std::string &name) : Being(id), _name(name) {}
 };
 
 class CompositeBinarius : public Binarius { //composite
 	Binarius &b0, &b1;
 public:
-	CompositeBinarius(id_type id, Binarius &b1, Binarius &b2) :
-		Binarius(id, b1.name() + "&" + b2.name()) {}
+	CompositeBinarius(id_type id, Binarius &b0, Binarius &b1) :
+		Binarius(id, b0.name() + "&" + b1.name()), b0(b0), b1(b1) {}
 		
 	virtual std::string name() const { return b0.name() + "&" + b1.name(); }
 };

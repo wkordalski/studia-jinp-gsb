@@ -13,3 +13,6 @@ Pytania:
 		}
 	c) jakieś dziedziczenie - tylko nie wiem, jak to może mieć taką
 		semantykę: Currency::EMC. Jakiś pomysł?
+
+- Czy kazdy bank powinien pamiętać listę kont w nim otwartych? Chyba tak - 
+	wtedy każde konto może pamiętać swój bank i przekazywać pieniądze na odpowiedni rachunek
