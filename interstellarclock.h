@@ -2,6 +2,7 @@
 #define __gsb__interstellar_clock__
 
 #include <functional>
+#include <vector>
 
 using Date = unsigned long long;
 using Time = unsigned short;
