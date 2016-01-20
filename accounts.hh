@@ -27,68 +27,49 @@ class Account {
 	protected:
 		id_type _id;
 		double _balance;
-		const Bank &_bank;
+		id_type bank_id;
 	public:
-		Account(id_type id, const Bank &bank) : 
-			id_type(id),
+		Account() : _id(), _balance(), bank_id() {}
+		Account(id_type id, id_type bank_id) : 
+			_id(id),
 			_balance(0.0),
-			_bank(bank) {}
+			bank_id(bank_id) {}
 	
-		double giveBalance() const { return _balance; }
-		id_type id() const { return _id; }
+		virtual double giveBalance() const { return _balance; }
+		virtual id_type id() const { return _id; }
 };
-
-	/*
-	* Pytanie: może zastosować tu podwójne dziedziczenie?
-	* W końcu CheckingAccount i CurrencyAccount mają metody withdraw,
-	* a CheckingAccount i SavingAccount mają metody transfer. Wyglądałoby to
-	* jakoś tak jak rozgałęziony diament nienawiści:
-	*
-	* 				Account
-	*			/			\
-	*		Withdrawable	Transferable
-	*		/		\		/		\
-	*	 Currency	Checking		Saving 
-	*
-	*
-	* Edit: tak zrobię. Stara wersja w komentarzu
-	*/
 
 std::ostream &operator<<(std::ostream &os, const Account &acc) {
 	os << acc.giveBalance();
 	return os;
 }
 
-class TransferAccount : public Account {
+class TransferAccount : public virtual Account {
 	public:
-		TransferAccount(id_type id, const Bank &bank) :
-			Account(id, bank) {}
+		TransferAccount(id_type id, id_type bank_id) :
+			Account(id, bank_id) {}
 		
 		void transfer(double amount /*, currency_type curr = default currency*/) {
-			/*
-			* Jak sprawić, żeby Transfer zmieniał stan innego konta?
-			* Może każde konto powinno pamiętać swój bank?
-			*/
 		}
 };
 
-class WithdrawAccount : public Account {
+class WithdrawAccount : public virtual Account {
 	public:
-		TransferAccount(id_type id, const Bank &bank) :
-			Account(id, bank) {}
+		WithdrawAccount(id_type id, id_type bank_id) :
+			Account(id, bank_id) {}
 
 		void withdraw(double amount /*, currency_type curr = default currency*/) {
-			if (amount > balance)
+			if (amount > _balance)
 				;/*throw wherewithalNotEnoughException()*/
 			else
-				balance -= amount;/* razy przelicznik waluty */
+				_balance -= amount;/* razy przelicznik waluty */
 		}
 };
 
 class CheckingAccount : public TransferAccount, public WithdrawAccount {
 	public:
-		CheckingAccount(id_type id, const Bank &bank) :
-			TransferAccount(id, bank) {}
+		CheckingAccount(id_type id, id_type bank_id) :
+			TransferAccount(id, bank_id), WithdrawAccount(id, bank_id) {}
 
 		void deposit(double amount /*, currency_type curr = default currency*/) {
 			// TODO
@@ -97,14 +78,14 @@ class CheckingAccount : public TransferAccount, public WithdrawAccount {
 
 class SavingAccount : public WithdrawAccount {
 	public:
-		SavingAccount(id_type id, const Bank &bank) :
-			WithdrawAccount(id, bank) {}
+		SavingAccount(id_type id, id_type bank_id) :
+			WithdrawAccount(id, bank_id) {}
 };
 
 class CurrencyAccount : public TransferAccount {
 	public:
-		CurrencyAccount(id_type id, const Bank &bank) :
-			TransferAccount(id, bank) {}
+		CurrencyAccount(id_type id, id_type bank_id) :
+			TransferAccount(id, bank_id) {}
 };
 
 #endif /* ! _GCB_ACCOUNTS_GG_ */
