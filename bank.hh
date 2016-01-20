@@ -12,9 +12,16 @@ protected:
 	AccountSettings saving;
 	AccountSettings currency;
 public:
+	void update_monthly() {
+		for (auto acc : accounts)
+			acc.update_monthly();
+	}
+
 	//Bank() : _name(), accounts(), checking(), saving(), currency() {}
-	Bank(std::string name, AccountSettings checking, AccountSettings saving, AccountSettings currency) :
-		_name(name), checking(checking), saving(saving), currency(currency) {}
+	Bank(std::string name, const std::vector<Account> &accounts, id_type id,
+		AccountSettings checking, AccountSettings saving, AccountSettings currency) :
+		_name(name), accounts(accounts), _id(id), 
+		checking(checking), saving(saving), currency(currency) {}
 
 	//TODO dopisać klasę currency
 	CheckingAccount openCheckingAccount(const Being &who) {

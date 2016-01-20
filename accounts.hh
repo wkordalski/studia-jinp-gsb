@@ -24,6 +24,7 @@ class Account {
 	private:
 		//AccountSettings acc_settings;
 		//TODO informacje o właścicielu konta?
+		//Edit: chyba są niepotrzebne
 	protected:
 		id_type _id;
 		double _balance;
@@ -37,6 +38,9 @@ class Account {
 	
 		virtual double giveBalance() const { return _balance; }
 		virtual id_type id() const { return _id; }
+		virtual void update_monthly() {
+			// co ma się dziać co miesiąc?
+		}
 };
 
 std::ostream &operator<<(std::ostream &os, const Account &acc) {

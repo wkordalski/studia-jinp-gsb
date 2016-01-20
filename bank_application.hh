@@ -33,12 +33,13 @@ public:
 		return *this;
 	}
 
-	Bank createBank() {
-		return { _name, checking_account_settings.createAccountSettings(),
-			saving_account_settings.createAccountSettings(),
-			currency_account_settings.createAccountSettings()
-		};
-	}
+	Bank createBank();// {
+//		return { _name, std::vector<Account>(), gkb().next_id(),
+//			checking_account_settings.createAccountSettings(),
+//			saving_account_settings.createAccountSettings(),
+//			currency_account_settings.createAccountSettings()
+//		};
+//	}
 
 	BankApplication & checkingAccount() {
 		this->current = &this->checking_account_settings;
@@ -74,13 +75,20 @@ public:
 	}
 };
 
-
+	/*
+	* czy poniższe edity są w porządku?
+	*/
 class GKB {
 private:
 	GKB() = default;
+	std::vector<Bank> banks;
 public:
+	id_type next_id() { return banks.size(); }
+	const Bank  &add_bank(const Bank &bank) {
+		banks.push_back(bank);
+		return bank;
+	}
 	BankApplication bankApplication() { return BankApplication(); }
-
 	friend GKB & gkb();
 };
 
@@ -90,4 +98,11 @@ GKB & gkb() {
 }
 
 
+Bank BankApplication::createBank() {
+	return gkb().add_bank({ _name, std::vector<Account>(), gkb().next_id(),
+		checking_account_settings.createAccountSettings(),
+		saving_account_settings.createAccountSettings(),
+		currency_account_settings.createAccountSettings()
+	});
+}
 #endif /* ! _GSB_BANK_APPLICATION_HH_ */
