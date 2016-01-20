@@ -3,17 +3,6 @@
 
 #include "accounts.hh"
 
-class AccountSettings {
-	double monthly_charge = 0.;
-	double transfer_charge = 0.;
-	double interest_rate = 1.;
-	
-public:
-	AccountSettings(double monthlyCharge, double transferCharge, double interestRate) :
-		monthly_charge(monthlyCharge), transfer_charge(transferCharge), interest_rate(interestRate) {
-	}
-};
-
 class Bank {
 protected:
 	std::string _name;
