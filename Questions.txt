@@ -1,0 +1,15 @@
+Pytania:
+
+- Czy pomysł zawarty w pliku accounts.hh ma sens?
+
+- Jak realizujemy Currency? Widzę trzy opcje:
+	a) Zwykły enum
+	b) Przestrzeń nazw Currency, mniej wiecej jakoś tak:
+		namespace Currency {
+			class Currency() { ... coś tam };
+			Currency() EMC;
+			Currency() jakaś_inna;
+			...
+		}
+	c) jakieś dziedziczenie - tylko nie wiem, jak to może mieć taką
+		semantykę: Currency::EMC. Jakiś pomysł?
