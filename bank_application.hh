@@ -1,34 +1,3 @@
-/*
-class AccountBuilder {
-public:
-	double monthly_charge;
-	double transfer_charge;
-	double interest_rate;
-};
-
-class BankApplication {
-	std::string name;
-	AccountBuilder cas(*this);
-	AccountBuilder *current = nullptr;
-	//...
-
-	BankApplication & name(std::string name) {
-		this->name = name;
-		return *this;
-	}
-
-	BankApplication & checkingAccount() {
-		this->current = &this->cas;
-		return *this;
-	}
-	
-	BankApplication & monthlyCharge(double value) {
-		this->current.monthly_charge = value;
-		return *this;
-	}
-};
-*/
-//////////////////
 #ifndef _GSB_BANK_APPLICATION_HH_
 #define _GSB_BANK_APPLICATION_HH_
 
@@ -38,39 +7,13 @@ class BankApplication {
 
 class BankApplication;
 
-class AccountBuilder {
-protected:
-	BankApplication &app;
+struct AccountSettingsBuilder {
 	double monthly_charge = 0.;
 	double transfer_charge = 0.;
-	double interest_rate = 1.;
-public:
-	AccountBuilder(BankApplication &app) : app(app) {}
-	
-	AccountBuilder & monthlyCharge(double value) {
-		monthly_charge = value;
-		return *this;
-	}
-	
-	AccountBuilder & transferCharge(double value) {
-		transfer_charge = value;
-		return *this;
-	}
-	
-	AccountBuilder & interestRate(double value) {
-		interest_rate = value;
-		return *this;
-	}
-	
-	BankApplication & name(std::string name);
-	Bank createBank();
-	AccountBuilder & checkingAccount();
-	AccountBuilder & savingAccount();
-	AccountBuilder & currencyAccount();
-	
-	
+	double interest_rate = 0.;
+
 	AccountSettings createAccountSettings() {
-		return { monthly_charge, transfer_charge, interest_rate };
+		return {monthly_charge, transfer_charge, interest_rate};
 	}
 };
 
@@ -78,21 +21,18 @@ public:
 class BankApplication {
 protected:
 	std::string _name = "";
-	AccountBuilder checking_account_settings;
-	AccountBuilder saving_account_settings;
-	AccountBuilder currency_account_settings;
+	AccountSettingsBuilder checking_account_settings;
+	AccountSettingsBuilder saving_account_settings;
+	AccountSettingsBuilder currency_account_settings;
+	AccountSettingsBuilder *current = nullptr;
 public:
-	BankApplication() : 
-		checking_account_settings(*this),
-		saving_account_settings(*this),
-		currency_account_settings(*this) {
-	}
-	
+
 	BankApplication & name(std::string text) {
 		this->_name = text;
+		// TODO: this->current = nullptr?
 		return *this;
 	}
-	
+
 	Bank createBank() {
 		return { _name, checking_account_settings.createAccountSettings(),
 			saving_account_settings.createAccountSettings(),
@@ -100,22 +40,48 @@ public:
 		};
 	}
 
-	AccountBuilder & checkingAccount() {
-		return checking_account_settings;
+	BankApplication & checkingAccount() {
+		this->current = &this->checking_account_settings;
+		return *this;
 	}
-	
-	AccountBuilder & savingAccount() {
-		return saving_account_settings;
+
+	BankApplication & savingAccount() {
+		this->current = &this->saving_account_settings;
+		return *this;
 	}
-	
-	AccountBuilder & currencyAccount() {
-		return currency_account_settings;
+
+	BankApplication & currencyAccount() {
+		this->current = &this->currency_account_settings;
+		return *this;
+	}
+
+	BankApplication & monthlyCharge(double value) {
+		if(this->current == nullptr) throw std::logic_error("You have to select account type to set its properties");
+		this->current->monthly_charge = value;
+		return *this;
+	}
+
+	BankApplication & transferCharge(double value) {
+		if(this->current == nullptr) throw std::logic_error("You have to select account type to set its properties");
+		this->current->transfer_charge = value;
+		return *this;
+	}
+
+	BankApplication & interestRate(double value) {
+		if(this->current == nullptr) throw std::logic_error("You have to select account type to set its properties");
+		this->current->interest_rate = value;
+		return *this;
 	}
 };
 
 
 class GKB {
+private:
+	GKB() = default;
+public:
 	BankApplication bankApplication() { return BankApplication(); }
+
+	friend GKB & gkb();
 };
 
 GKB & gkb() {
@@ -123,12 +89,5 @@ GKB & gkb() {
 	return instance;
 }
 
-
-
-BankApplication & AccountBuilder::name(std::string name) { return app.name(name); }
-Bank AccountBuilder::createBank() { return app.createBank(); }
-AccountBuilder & AccountBuilder::checkingAccount() { return app.checkingAccount(); }
-AccountBuilder & AccountBuilder::savingAccount() { return app.savingAccount(); }
-AccountBuilder & AccountBuilder::currencyAccount() { return app.currencyAccount(); }
 
 #endif /* ! _GSB_BANK_APPLICATION_HH_ */

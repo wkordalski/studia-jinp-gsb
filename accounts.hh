@@ -74,6 +74,8 @@ class WithdrawAccount : public Account {
 class CheckingAccount : public TransferAccount, public WithdrawAccount {
 	public:
 		void deposit(double amount /*, currency_type curr = default currency*/) {
+			// TODO
+		}
 };
 
 class SavingAccount : public WithdrawAccount {};
