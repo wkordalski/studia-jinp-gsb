@@ -6,6 +6,7 @@
 #include "currency.hh"
 #include "beings.hh"
 #include "bank.hh"
+#include "operation.hh"
 #include <ostream>
 
 class Bank;
@@ -23,20 +24,18 @@ public:
 
 class Account {
 	private:
-		//AccountSettings acc_settings;
-		//TODO informacje o właścicielu konta?
-		//Edit: chyba są niepotrzebne
 	protected:
 		id_type _id;
 		double _balance;
 		id_type bank_id;
-		//Account() : _id(), _balance(), bank_id() {}
+		History _history;
+
 		Account(id_type id, id_type bank_id) : 
 			_id(id),
 			_balance(0.0),
 			bank_id(bank_id) {}
 	public:
-	
+		virtual History history() { return _history; }	
 		virtual double giveBalance() const { return _balance; }
 		virtual id_type id() const { return _id; }
 		virtual void update_monthly() {
