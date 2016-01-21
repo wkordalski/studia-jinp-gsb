@@ -4,72 +4,70 @@
 #include <ostream>
 #include "beings.hh"
 #include "interstellarclock.h"
+#include "money.hh"
 
 
-class Operation {	
+class Operation {
 	protected:
-		Operation(Date date, double amount, Currency curr) :
-			_date(date), _amount(amount), _curr(curr) {}
 		Date _date;
-		double _amount;
-		Currency _curr;
-	public:
-		Date date() const { return _date; }
-		double amount() const { return _amount; }
-		Currency curr() const { return _curr; }
-};
 
-std::ostream &operator<<(std::ostream &os, const Operation &op) {
-	return os;
-}
+	public:
+		Operation(Date date) : _date(date) {}
+		Date date() const { return _date; }
+
+		virtual void print(std::ostream &os) const = 0;
+};
 
 class Transfer : public Operation {
-	private:
-		id_type _from;
-		id_type _to;
-		std::string _msg;
-	public:
-		Transfer(Date date, double amount, Currency curr,
-			id_type from, id_type to, std::string msg) :
-				Operation(date, amount, curr),
-				_from(from), _to(to), _msg(msg) {};
-		id_type from() const { return _from; }
-		id_type to() const { return _to; }
-		std::string msg() const { return _msg; }
+protected:
+	Money _money;
+	id_type _from;
+	id_type _to;
+	std::string _msg;
+public:
+	Transfer(Date date, Money money, id_type from, id_type to, std::string msg) :
+			Operation(date), _money(money), _from(from), _to(to), _msg(msg) {};
+
+	Money money() const { return _money; }
+	id_type from() const { return _from; }
+	id_type to() const { return _to; }
+	std::string msg() const { return _msg; }
+
+	virtual void print(std::ostream &os) const {
+		os << date() << " " << money() << " TRANSFER ";
+		if(msg() != "") os << "(" << msg() << ")";
+		os << " FROM:" << from() << " TO: " << to();
+	}
 };
 
-std::ostream &operator<<(std::ostream &os, const Transfer &tr) {
-	os << tr.date() << " "
-		<< tr.amount() << tr.curr()
-		<< " TRANSFER (" << tr.msg() << ") FROM:"
-		<< tr.from() << " TO: " << tr.to();
-	return os;
-}
 
 class Deposit : public Operation {
-	public:
-		Deposit(Date date, double amount, Currency curr) :
-			Operation(date, amount, curr) {}
+protected:
+	Money _money;
+public:
+	Deposit(Date date, Money money) :
+			Operation(date), _money(money) {}
+
+	Money money() const { return _money; }
+
+	virtual void print(std::ostream &os) const {
+		os << date() << " " << money() << " DEPOSIT";
+	}
 };
-
-std::ostream &operator<<(std::ostream &os, const Deposit &dep) {
-	os << dep.date() << " "
-		<< dep.amount() << dep.curr()
-		<< " DEPOSIT";
-}
-
 
 class Withdrawal : public Operation {
+		Money _money;
 	public:
-		Withdrawal(Date date, double amount, Currency curr) :
-			Operation(date, amount, curr) {}
+		Withdrawal(Date date, Money money) :
+			Operation(date), _money(money) {}
+
+		Money money() const { return _money; }
+
+		virtual void print(std::ostream &os) const {
+			os << date() << " " << money() << " WITHDRAWAL";
+		}
 };
 
-std::ostream &operator<<(std::ostream &os, const Withdrawal &wit) {
-	os << wit.date() << " "
-		<< wit.amount() << wit.curr()
-		<< " WITHDRAWAL";
-}
 
 class History {
 	private:
@@ -86,7 +84,12 @@ class History {
 		}
 };
 
-std::ostream &operator<<(std::ostream &os, const History &h) {
+std::ostream & operator<<(std::ostream &os, const Operation &op) {
+	op.print(os);
+	return os;
+}
+
+std::ostream & operator<<(std::ostream &os, const History &h) {
 	for (auto op : h.operations())
 		os << *op << std::endl;
 }

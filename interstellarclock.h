@@ -2,15 +2,23 @@
 #define __gsb__interstellar_clock__
 
 #include <functional>
-#include <vector>
+#include <set>
 
 using Date = unsigned long long;
 using Time = unsigned short;
 
+class InterstellarClockObserver {
+public:
+  virtual void on_month_change() = 0;
+};
+
 // Czas międzyplanetarny liczymy z dokładnością do godziny.
 // Nowoutworzony zegar międzyplanetarny będzie wskazywał czas 0 i dzień 0.
 class InterstellarClock {
+    using observer = std::function<void()>;
 public:
+    using observer_registration = std::set<observer>::iterator;
+
     // Doba międzyplanetarna ma 20 godzin (0-19).
     static const unsigned HOURS_IN_DAY = 20;
 
@@ -37,15 +45,17 @@ public:
     // Przesuwa zegar o miesiąc (miesiąc ma 30 dni).
     virtual InterstellarClock& nextMonth();
 
-    void registerMonthChangeObserver(std::function<void(InterstellarClock&)> observer);
+    void registerMonthChangeObserver(InterstellarClockObserver *observer);
+    void unregisterMonthChangeObserver(InterstellarClockObserver *observer);
 
 private:
     // liczba godzin od początku założenia ZFP
     unsigned long long _hours;
 
     // List of observers (we store function list we have to call on month change)
-    std::vector<std::function<void(InterstellarClock &)>> _on_month_change;
+    std::set<InterstellarClockObserver*> _on_month_change;
 };
 
+InterstellarClock & interstellarClock();
 
 #endif /* defined(__gsb__interstellar_clock__) */

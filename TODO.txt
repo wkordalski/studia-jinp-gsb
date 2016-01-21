@@ -1,0 +1,2 @@
+1) Wszystkie Accounts powinny mieć transfer, deposit, withdraw,
+   ale niektóre powinny rzucać wyjątkami (zamiast się nie kompilować)

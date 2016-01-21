@@ -15,7 +15,7 @@ Date InterstellarClock::date() const {
 InterstellarClock& InterstellarClock::nextHour() {
     _hours++;
     if(_hours % (HOURS_IN_DAY * DAYS_IN_MONTH) == 0) {
-      for(auto f : _on_month_change) f(*this);
+      for(auto obs : _on_month_change) obs->on_month_change();
     }
     return *this;
 }
@@ -32,6 +32,15 @@ InterstellarClock& InterstellarClock::nextMonth() {
     return *this;
 }
 
-void InterstellarClock::registerMonthChangeObserver(std::function<void(InterstellarClock&)> observer) {
-  _on_month_change.push_back(observer);
+void InterstellarClock::registerMonthChangeObserver(InterstellarClockObserver *observer) {
+  _on_month_change.insert(observer);
+}
+
+void InterstellarClock::unregisterMonthChangeObserver(InterstellarClockObserver *observer) {
+  _on_month_change.erase(observer);
+}
+
+InterstellarClock & interstellarClock() {
+  static InterstellarClock instance;
+  return instance;
 }

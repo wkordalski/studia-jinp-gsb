@@ -33,13 +33,7 @@ public:
 		return *this;
 	}
 
-	Bank createBank();// {
-//		return { _name, std::vector<Account>(), gkb().next_id(),
-//			checking_account_settings.createAccountSettings(),
-//			saving_account_settings.createAccountSettings(),
-//			currency_account_settings.createAccountSettings()
-//		};
-//	}
+	Bank & createBank();
 
 	BankApplication & checkingAccount() {
 		this->current = &this->checking_account_settings;
@@ -81,12 +75,15 @@ public:
 class GKB {
 private:
 	GKB() = default;
-	std::vector<Bank> banks;
+	std::vector<Bank*> banks;
 public:
+	~GKB() {
+		for(Bank *b : banks) delete b;
+	}
 	id_type next_id() { return banks.size(); }
-	const Bank  &add_bank(const Bank &bank) {
+	Bank & add_bank(Bank *bank) {
 		banks.push_back(bank);
-		return bank;
+		return *bank;
 	}
 	BankApplication bankApplication() { return BankApplication(); }
 	friend GKB & gkb();
@@ -98,11 +95,11 @@ GKB & gkb() {
 }
 
 
-Bank BankApplication::createBank() {
-	return gkb().add_bank({ _name, gkb().next_id(),
+Bank & BankApplication::createBank() {
+	return gkb().add_bank(new Bank( _name, gkb().next_id(),
 		checking_account_settings.createAccountSettings(),
 		saving_account_settings.createAccountSettings(),
 		currency_account_settings.createAccountSettings()
-	});
+	));
 }
 #endif /* ! _GSB_BANK_APPLICATION_HH_ */
