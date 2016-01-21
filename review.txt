@@ -3,18 +3,30 @@
 I. account.hh
 
 1) zmienić domyślny interest_rate na 0.
+Zrobione
+
 2) domyślny konstruktor klasy Account nie ma żadnego semantycznego znaczenia
+Done
+
+
 3) potrzeba zaimplementować historię operacji
+W trakcie
+
 4) zastanowić czy wszystko, co jest public powinno być public, a nie protected
    W szczególności konstruktor klasy Account(id_type, id_type)
+Słusznie
+
 5) przy virtual'nym dziedziczeniu konstruktor klasy bazowej (Account) trzeba
    wywołać z najbardziej dziedziczącej klasy pochodnej (tutaj CurrencyAccount,
    CheckingAccount, SavingAccount) - inaczej zostanie wywołany konstruktor
    domyślny klasy Account.
+Done
 
 II. bank.hh
 
 1) jaki jest sens tworzenia banku z już istniejącymi kontami?
+Done
+
 2) jeżeli zakładamy, że logiczne by było, że kiedyś zostanie dopisana funkcja
    usuwania kont, to może warto byłoby trzymać konta na mapie
 3) trzymanie obiektów klasy Account nie ma sensu, jako, że dodając odpowiedni
@@ -22,6 +34,7 @@ II. bank.hh
    czyli tracimy jego dodatkowe dane - warto by więc alokować konta na stercie,
    oraz trzymać w kontenerze wskaźniki na te obiekty (wskaźniki będą typu
    Account*)
+Done
 
 III. bank_application.hh
 

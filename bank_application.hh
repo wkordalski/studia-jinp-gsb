@@ -99,7 +99,7 @@ GKB & gkb() {
 
 
 Bank BankApplication::createBank() {
-	return gkb().add_bank({ _name, std::vector<Account>(), gkb().next_id(),
+	return gkb().add_bank({ _name, gkb().next_id(),
 		checking_account_settings.createAccountSettings(),
 		saving_account_settings.createAccountSettings(),
 		currency_account_settings.createAccountSettings()

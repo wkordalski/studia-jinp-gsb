@@ -3,6 +3,7 @@
 #ifndef _GSB_ACCOUNTS_H
 #define _GSB_ACCOUNTS_H
 
+#include "currency.hh"
 #include "beings.hh"
 #include "bank.hh"
 #include <ostream>
@@ -12,7 +13,7 @@ class Bank;
 class AccountSettings {
 	double monthly_charge = 0.;
 	double transfer_charge = 0.;
-	double interest_rate = 1.;
+	double interest_rate = 0.;
 	
 public:
 	AccountSettings(double monthlyCharge, double transferCharge, double interestRate) :
@@ -29,12 +30,12 @@ class Account {
 		id_type _id;
 		double _balance;
 		id_type bank_id;
-	public:
-		Account() : _id(), _balance(), bank_id() {}
+		//Account() : _id(), _balance(), bank_id() {}
 		Account(id_type id, id_type bank_id) : 
 			_id(id),
 			_balance(0.0),
 			bank_id(bank_id) {}
+	public:
 	
 		virtual double giveBalance() const { return _balance; }
 		virtual id_type id() const { return _id; }
@@ -73,7 +74,7 @@ class WithdrawAccount : public virtual Account {
 class CheckingAccount : public TransferAccount, public WithdrawAccount {
 	public:
 		CheckingAccount(id_type id, id_type bank_id) :
-			TransferAccount(id, bank_id), WithdrawAccount(id, bank_id) {}
+			Account(id, bank_id), TransferAccount(id, bank_id), WithdrawAccount(id, bank_id) {}
 
 		void deposit(double amount /*, currency_type curr = default currency*/) {
 			// TODO
@@ -83,13 +84,13 @@ class CheckingAccount : public TransferAccount, public WithdrawAccount {
 class SavingAccount : public WithdrawAccount {
 	public:
 		SavingAccount(id_type id, id_type bank_id) :
-			WithdrawAccount(id, bank_id) {}
+			Account(id, bank_id), WithdrawAccount(id, bank_id) {}
 };
 
 class CurrencyAccount : public TransferAccount {
 	public:
 		CurrencyAccount(id_type id, id_type bank_id) :
-			TransferAccount(id, bank_id) {}
+			Account(id, bank_id), TransferAccount(id, bank_id) {}
 };
 
 #endif /* ! _GCB_ACCOUNTS_GG_ */
