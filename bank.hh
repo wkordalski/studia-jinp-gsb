@@ -7,6 +7,7 @@ class Bank {
 protected:
 	std::string _name;
 	std::vector<Account *> accounts;
+
 	id_type _id;
 	AccountSettings checking;
 	AccountSettings saving;
