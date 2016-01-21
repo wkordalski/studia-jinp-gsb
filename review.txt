@@ -48,3 +48,27 @@ Jeśli będzie to ów enum, zawierający dostępne waluty, to:
 enum class Currency {
   ENC, LIT, DIL
 };
+
+
+# Raport z review commita 8d73a608df1a3fe201d266cdea4f6ebd55acb403
+
+I. accounts.hh
+
+1) ma być: virtual const History & Account::history() const
+
+II. bank.hh
+
+1) ma być: XXXAccount & Bank::openXXXAccount(const Being &who);
+2) brak zwracanej wartości w Bank::openXXXAccount
+
+III. bank_application.hh
+
+IV. currency.hh
+
+1) nazwa money.hh jest lepsza
+2) enumy podajemy do funkcji przez wartość
+3) klasa Money nie może mieć konstruktora jednoargumentowego
+   przyjmującego double (w tym konstruktora dwuargumentowego z domyślnym
+   parametrem). Powoduje to niejednoznaczności w funkcjach jak na przykład:
+   void f(double d); /* gdy domyślna waluta konta - niekoniecznie ENC */
+   void f(Money m);  /* gdy podana waluta */
