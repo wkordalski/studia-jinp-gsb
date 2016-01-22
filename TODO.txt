@@ -1,2 +1,24 @@
 1) Wszystkie Accounts powinny mieć transfer, deposit, withdraw,
    ale niektóre powinny rzucać wyjątkami (zamiast się nie kompilować)
+2) Trzaba je zaimplementować (pamiętaj o sprawdzaniu danych wejściowych)
+   W szczególności kwota musi być nieujemna (dodatnia?)
+3) id_type powinien być klasą, coś na wzór
+
+class ID {
+	protected:
+		bool valid = false;
+		std::size_t value = 0;
+	public:
+		ID() = default;
+		ID(std::size_t v) : valid(true), value(v) {}
+		ID(const ID &) = default;
+		
+		template<typename T>
+		ID(const T &t) : valid(false) {}
+}
+
+// Trzeba do tego zaimplementować sensowne operatory porównania
+
+// Chodzi o to, by "asdasd" mogło być też identyfikatorem (p. gsb_example.cpp)
+
+4) Wszystko, czego nie zrobiłem :( i nie zrobiłeś :P
