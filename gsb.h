@@ -269,7 +269,7 @@ public:
 
 	virtual Binarius & findCitizen(id_type id) {
 		auto it = registered_beings.find(id);
-		if (it != registered_beings.end())
+		if (id.valid() && it != registered_beings.end())
 			return *(it->second);
 		else
 			throw beingNotFoundException();
