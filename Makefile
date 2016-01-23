@@ -1,4 +1,7 @@
 all:
 	g++ -std=c++11 -o test gsb_example.cpp interstellarclock.cpp
+
+test:
+	g++ -std=c++11 -o test test.cc interstellarclock.cpp
 clean:
 	rm test

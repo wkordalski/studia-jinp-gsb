@@ -13,6 +13,7 @@ class Operation {
 
 	public:
 		Operation(Date date) : _date(date) {}
+		virtual ~Operation() {}
 		Date date() const { return _date; }
 
 		virtual void print(std::ostream &os) const = 0;
@@ -92,6 +93,7 @@ std::ostream & operator<<(std::ostream &os, const Operation &op) {
 std::ostream & operator<<(std::ostream &os, const History &h) {
 	for (auto op : h.operations())
 		os << *op << std::endl;
+  return os;
 }
 
 #endif

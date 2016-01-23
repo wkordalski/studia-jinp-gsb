@@ -27,7 +27,7 @@ public:
 	}
 
 
-	~Bank() {
+	virtual ~Bank() {
 		for (auto acc : accounts)
 			delete acc;
 		interstellarClock().unregisterMonthChangeObserver(this);

@@ -12,6 +12,7 @@ class Being {
 		id_type _id;
 	public:
 		Being(id_type id) : _id(id) {}
+		virtual ~Being() {}
 		id_type id() { return _id; }
 		virtual std::string name() const = 0;
 
@@ -36,6 +37,7 @@ public:
 class Binarius : public Being { //component
 public:
 	Binarius(id_type id) : Being(id) {}
+	~Binarius() {}
 };
 
 class CompositeBinarius : public Binarius { //composite

@@ -12,6 +12,7 @@ class beingNotFoundException : public std::exception {
 
 class Planet {
 public:
+  ~Planet() {}
 	virtual Being & registerCitizen(std::string name) = 0;
 	virtual Being & findCitizen(std::string name) {
 		auto it = id_by_name.find(name);
