@@ -119,11 +119,14 @@ class AccountID {
 		std::size_t value2() const { return _value2; }
 		
 		bool operator==(const AccountID &other) const {
-			return (_valid && other._valid) &&
-				(_value1 == other._value1 && _value2 == other._value2);
+      if(!_valid && !other._valid) return true;
+      if(!_valid || !other._valid) return false;
+			return (_value1 == other._value1 && _value2 == other._value2);
 		}
 
 		bool operator<(const AccountID &other) const {
+      if(!other._valid) return false;
+      if(!_valid && other._valid) return true;
 			return _value1 < other._value1 ||
 				(_value1 == other._value1 && _value2 < other._value2);
 		}
@@ -157,6 +160,7 @@ class Being {
 		id_type _id;
 	public:
 		Being(id_type id) : _id(id) {}
+		virtual ~Being() {}
 		id_type id() { return _id.value(); }
 		virtual std::string name() const = 0;
 };
@@ -179,11 +183,8 @@ class Klingon : public Being {
 
 class Binarius : public Being { //component
 	public:
-		virtual ~Binarius() = 0;
 		Binarius(id_type id) : Being(id) {}
 };
-
-Binarius::~Binarius() {}
 
 class CompositeBinarius : public Binarius { //composite
 	private:
@@ -210,6 +211,8 @@ class SingleBinarius : public Binarius { //leaf
 
 class Planet {
 	public:
+    virtual ~Planet() {}
+    
 		virtual Being & registerCitizen(std::string name) = 0;
 		virtual Being & findCitizen(std::string name) {
 			auto it = id_by_name.find(name);
@@ -259,7 +262,7 @@ protected:
 	std::map<id_type, Binarius *> registered_beings;
 	std::size_t counter = 0;
 public:
-	~Bajnaus() {
+	virtual ~Bajnaus() {
 		for (auto p : registered_beings) {
 			delete p.second;
 		}
@@ -353,13 +356,11 @@ class Operation {
 
 	public:
 		Operation(Date date) : _date(date) {}
-		virtual ~Operation() = 0;
+		virtual ~Operation() {}
 		Date date() const { return _date; }
 
 		virtual void print(std::ostream &os) const = 0;
 };
-
-Operation::~Operation() {}
 
 class Transfer : public Operation {
 	protected:
@@ -531,7 +532,7 @@ class Account {
 			_currency(currency) {}
 
 	public:
-		virtual ~Account() = 0;	
+		virtual ~Account() {}	
 		virtual const History & history() { return _history; }
 		virtual double balance() const { return _balance; }
 		virtual acc_id_type id() const { return _id; }
@@ -581,8 +582,6 @@ class Account {
 			}
 		}
 };
-
-inline Account::~Account() {}
 
 std::ostream &operator<<(std::ostream &os, const Account &acc) {
 	os << std::fixed << std::setprecision(2) << acc.balance();
@@ -688,7 +687,7 @@ class Bank : public InterstellarClockObserver {
 				{
 			interstellarClock().registerMonthChangeObserver(this);
 			}
-
+    /*
 		Bank(std::string name, id_type id,
 			AccountSettings checking, AccountSettings saving, AccountSettings currency) :
 			_name(name), _id(id),
@@ -696,7 +695,7 @@ class Bank : public InterstellarClockObserver {
 				currency_settings(currency) {
 			interstellarClock().registerMonthChangeObserver(this);
 		}
-
+    */
 
 		~Bank() {
 			for (auto acc : accounts)
@@ -836,7 +835,8 @@ Bank & BankApplication::createBank() {
 		saving_account_settings.createAccountSettings(),
 		currency_account_settings.createAccountSettings());
 	all_banks_ever().push_back(ptr);
-	return gkb().add_bank(ptr);
+  gkb().add_bank(ptr);
+	return *ptr;
 }
 
 #endif
