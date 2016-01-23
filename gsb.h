@@ -692,7 +692,7 @@ class Bank : public InterstellarClockObserver {
 		virtual ~Bank() {
 			for (auto acc : accounts)
 				delete acc;
-			interstellarClock().unregisterMonthChangeObserver(this);
+			//interstellarClock().unregisterMonthChangeObserver(this);
 		}
 	
 		ExchangeTable & exchangeTable() {
