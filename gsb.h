@@ -72,14 +72,12 @@ class ID {
 		
 		bool operator==(const ID &other) const {
       if(!_valid && !other._valid) return true;
-      if(_valid && !other._valid) return false;
-      if(!_valid && other._valid) return false;
+      if(!_valid || !other._valid) return false;
 			return _value == other._value;
 		}
 
 		bool operator<(const ID &other) const {
-      if(!_valid && !other._valid) return false;
-      if(_valid && !other._valid) return false;
+      if(!other._valid) return false;
       if(!_valid && other._valid) return true;
 			return _value < other._value;
 		}
