@@ -533,9 +533,10 @@ class Account {
 
 	public:
 		virtual ~Account() {}	
-		virtual const History & history() { return _history; }
-		virtual double balance() const { return _balance; }
+		virtual const History & history() const { return _history; }
+		virtual Money balance() const { return {_balance, _currency}; }
 		virtual acc_id_type id() const { return _id; }
+		virtual Currency currency() const { return _currency; }
 		virtual void on_month_change() {
 			double interests = _balance * settings.interestRate() / 100;
 			double charges = settings.monthlyCharge();
@@ -547,6 +548,9 @@ class Account {
 				{interests, _currency}, "INTEREST"));
 			_history.add(new OperationMixin(interstellarClock().date(),
 				{(-1.0)*charges, _currency}, "CHARGE"));
+		}
+		Bank *getBank() {
+			return all_banks_ever()[bank_id];
 		}
 	protected:
 		void receive_transfer(double amount, acc_id_type from,
@@ -576,7 +580,7 @@ class Account {
 				all_accounts_ever()[to.value1()][to.value2()]->receive_transfer(
 					amount, _id, _currency, msg);
 				_history.add(new Transfer(interstellarClock().date(), 
-					{amount, _currency}, _id, to, msg));
+					{(-1.0)*amount, _currency}, _id, to, msg));
 			} catch (...) {
 				_balance += amount;
 			}
@@ -584,7 +588,10 @@ class Account {
 };
 
 std::ostream &operator<<(std::ostream &os, const Account &acc) {
-	os << std::fixed << std::setprecision(2) << acc.balance();
+	os << std::fixed << std::setprecision(2)
+		<< "Account: " << acc.id() << std::endl
+		<< "Balance: " << acc.balance() << std::endl
+		<< "History:\n" << acc.history();
 	return os;
 }
 
@@ -823,7 +830,7 @@ Bank & BankApplication::createBank() {
 		saving_account_settings.createAccountSettings(),
 		currency_account_settings.createAccountSettings());
 	all_banks_ever().push_back(ptr);
-  gkb().add_bank(ptr);
+	gkb().add_bank(ptr);
 	return *ptr;
 }
 
