@@ -6,6 +6,7 @@
 #include <map>
 #include <ostream>
 #include <string>
+#include <iomanip>
 #include <vector>
 #include "interstellarclock.h"
 
@@ -39,11 +40,11 @@ class beingNotFoundException : std::exception {
 	virtual const char * what() { return "Being not found"; }
 };
 
-class business_error : std::exception {
+class BusinessException : std::exception {
 	private:
 		const char *_msg;
 	public:
-		business_error(const char *s) : _msg(s) {}
+		BusinessException(const char *s) : _msg(s) {}
 		virtual const char * what() const noexcept { return _msg; }
 };
 
@@ -125,12 +126,12 @@ class AccountID {
 };
 
 std::ostream &operator<<(std::ostream &os, const ID &id) {
-	os << id.value();
+	os << std::fixed << std::setprecision(2) << id.value();
 	return os;
 }
 
 std::ostream &operator<<(std::ostream &os, const AccountID &id) {
-	os << "(" << id.value1() << ", " << id.value2() << ")";
+	os << std::fixed << std::setprecision(2) << "(" << id.value1() << ", " << id.value2() << ")";
 	return os;
 }
 
@@ -170,8 +171,11 @@ class Klingon : public Being {
 
 class Binarius : public Being { //component
 	public:
+		virtual ~Binarius() = 0;
 		Binarius(id_type id) : Being(id) {}
 };
+
+Binarius::~Binarius() {}
 
 class CompositeBinarius : public Binarius { //composite
 	private:
@@ -231,7 +235,7 @@ class SimplePlanetMixin : Planet {
 	
 		virtual BeingT & findCitizen(id_type id) {
 			auto it = registered_beings.find(id);
-			if (it != registered_beings.end())
+			if (id.valid() && it != registered_beings.end())
 				return *(it->second);
 			else
 				throw beingNotFoundException();
@@ -265,7 +269,7 @@ public:
 
 	virtual Binarius & findCitizen(id_type id) {
 		auto it = registered_beings.find(id);
-		if (it != registered_beings.end())
+		if (id.valid() && it != registered_beings.end())
 			return *(it->second);
 		else
 			throw beingNotFoundException();
@@ -302,13 +306,13 @@ enum class Currency {
 std::ostream &operator<<(std::ostream &os, const Currency &curr) {
 	switch(curr) {
 		case Currency::ENC:
-			return os << "ENC";
+			return os << std::fixed << std::setprecision(2) << "ENC";
 		case Currency::BIC:
-			return os << "BIC";
+			return os << std::fixed << std::setprecision(2) << "BIC";
 		case Currency::DIL:
-			return os << "DIL";
+			return os << std::fixed << std::setprecision(2) << "DIL";
 		case Currency::LIT:
-			return os << "LIT";
+			return os << std::fixed << std::setprecision(2) << "LIT";
 		default:
 			return os;
 	}
@@ -326,7 +330,7 @@ class Money {
 };
 
 std::ostream & operator<<(std::ostream &os, const Money &money) {
-	return os << money.amount() << money.currency();
+	return os << std::fixed << std::setprecision(2) << money.amount() << money.currency();
 }
 
 /*
@@ -341,10 +345,13 @@ class Operation {
 
 	public:
 		Operation(Date date) : _date(date) {}
+		virtual ~Operation() = 0;
 		Date date() const { return _date; }
 
 		virtual void print(std::ostream &os) const = 0;
 };
+
+Operation::~Operation() {}
 
 class Transfer : public Operation {
 	protected:
@@ -363,8 +370,8 @@ class Transfer : public Operation {
 		std::string msg() const { return _msg; }
 
 		virtual void print(std::ostream &os) const {
-			os << date() << " " << money() << " TRANSFER " << "(" << msg() << ")"
-			<< " FROM:" << from() << " TO: " << to();
+			os << std::fixed << std::setprecision(2) << date() << " " << money() << " TRANSFER " << "(" << msg() << ")"
+			<< " FROM: " << from() << " TO: " << to();
 		}
 };
 
@@ -383,7 +390,7 @@ class OperationMixin : public Operation {
 		Money money() const { return _money; }
 
 		virtual void print(std::ostream &os) const {
-			os << date() << " " << money() << " " << _oper;
+			os << std::fixed << std::setprecision(2) << date() << " " << money() << " " << _oper;
 		}
 };
 
@@ -409,7 +416,7 @@ std::ostream & operator<<(std::ostream &os, const Operation &op) {
 
 std::ostream & operator<<(std::ostream &os, const History &h) {
 	for (auto op : h.operations())
-		os << *op << "\n";
+		os << std::fixed << std::setprecision(2) << *op << "\n";
 	return os;
 }
 
@@ -420,48 +427,48 @@ std::ostream & operator<<(std::ostream &os, const History &h) {
 */
 
 class ExchangeTable {
-protected:
-  struct TableEntry {
-	double buy = 1.;
-	double sell = 1.;
-  };
-protected:
-  std::map<Currency, TableEntry> _map;
-  TableEntry *_current_entry = nullptr;
+	protected:
+		struct TableEntry {
+			double buy = 1.;
+			double sell = 1.;
+		};
+	protected:
+		std::map<Currency, TableEntry> _map;
+		TableEntry *_current_entry = nullptr;
 
-public:
-  ExchangeTable & exchangeRate(Currency currency) {
-	_current_entry = &_map[currency];
-	return *this;
-  }
+	public:
+		ExchangeTable & exchangeRate(Currency currency) {
+		_current_entry = &_map[currency];
+		return *this;
+	}
 
-  ExchangeTable & buyingRate(double value) {
-	if (_current_entry) _current_entry->buy = value;
-	else throw std::logic_error("Set currency before setting rates.");
-	return *this;
-  }
-  ExchangeTable & sellingRate(double value) {
-	if (_current_entry) _current_entry->sell = value;
-	else throw std::logic_error("Set currency before setting rates.");
-	return *this;
-  }
+	ExchangeTable & buyingRate(double value) {
+		if (_current_entry) _current_entry->buy = value;
+		else throw std::logic_error("Set currency before setting rates.");
+		return *this;
+	}
+	ExchangeTable & sellingRate(double value) {
+		if (_current_entry) _current_entry->sell = value;
+		else throw std::logic_error("Set currency before setting rates.");
+		return *this;
+	}
 
-  // Changes money to different currency using the ExchangeTable.
-  Money change(Money money, Currency currency) const {
-	// No change needed...
-	if (money.currency() == currency) return money;
+	// Changes money to different currency using the ExchangeTable.
+	Money change(Money money, Currency currency) const {
+		// No change needed...
+		if (money.currency() == currency) return money;
 
-	auto entry = [this](Currency c) {
-	  auto it = _map.find(c);
-	  if (it == _map.end()) return TableEntry();
-	  else return it->second;
-	};
+		auto entry = [this](Currency c) {
+			auto it = _map.find(c);
+			if (it == _map.end()) return TableEntry();
+			else return it->second;
+		};
 
-	Money enc = (money.currency() == Currency::ENC) ? money :
-		Money(money.amount()*entry(money.currency()).sell, Currency::ENC);
-	return (currency == Currency::ENC) ? enc :
-		Money(enc.amount()*entry(currency).buy, currency);
-  }
+		Money enc = (money.currency() == Currency::ENC) ? money :
+			Money(money.amount()*entry(money.currency()).sell, Currency::ENC);
+		return (currency == Currency::ENC) ? enc :
+			Money(enc.amount()*entry(currency).buy, currency);
+		}
 };
 
 /*
@@ -487,7 +494,7 @@ public:
 		transfer_charge(transferCharge),
 			interest_rate(interestRate) {
 		if (monthlyCharge < .0 || transferCharge < .0 || interestRate < .0) {
-			throw business_error("You can't charge negative amounts of money!");
+			throw BusinessException("You can't charge negative amounts of money!");
 		}
 	}
 
@@ -516,7 +523,7 @@ class Account {
 			_currency(currency) {}
 
 	public:
-//		virtual ~Account() = 0;
+		virtual ~Account() = 0;	
 		virtual const History & history() { return _history; }
 		virtual double balance() const { return _balance; }
 		virtual acc_id_type id() const { return _id; }
@@ -530,13 +537,13 @@ class Account {
 			_history.add(new OperationMixin(interstellarClock().date(),
 				{interests, _currency}, "INTEREST"));
 			_history.add(new OperationMixin(interstellarClock().date(),
-				{(-1.0)*charges, _currency}, "CHARGES"));
+				{(-1.0)*charges, _currency}, "CHARGE"));
 		}
 	protected:
 		void receive_transfer(double amount, acc_id_type from,
 				Currency curr, const char *msg = "") {
 			if (amount < 0) {
-				throw business_error("We don't revieve negative transfers");
+				throw BusinessException("We don't revieve negative transfers");
 			}
 			_balance += amount; // razy przelicznik
 			_history.add(new Transfer(interstellarClock().date(), 
@@ -547,12 +554,12 @@ class Account {
 	public:
 		void transfer(double amount, acc_id_type to, const char *msg = "") {
 			if (amount > _balance) {
-				throw business_error("Insufficient balance");
+				throw BusinessException("Insufficient balance");
 			}
 
 			if (!to.valid() || to.value1() > all_accounts_ever().size() ||
 				to.value2() > all_accounts_ever()[to.value1()].size()) {
-				throw business_error("Invalid identifier");
+				throw BusinessException("Invalid identifier");
 			}
 	
 			_balance -= amount;
@@ -567,8 +574,10 @@ class Account {
 		}
 };
 
+inline Account::~Account() {}
+
 std::ostream &operator<<(std::ostream &os, const Account &acc) {
-	os << acc.balance();
+	os << std::fixed << std::setprecision(2) << acc.balance();
 	return os;
 }
 
@@ -580,7 +589,7 @@ class CheckingAccount : public Account {
 
 		void deposit(Money money) {
 			if (money.amount() < 0)
-				throw business_error(
+				throw BusinessException(
 					"Depositing negative number of money!");
 			_balance += money.amount(); // razy przelicznik
 			_history.add(new OperationMixin(interstellarClock().date(),
@@ -588,13 +597,13 @@ class CheckingAccount : public Account {
 		}
 		void deposit(double amount) {
 			if (amount < 0)
-				throw business_error("Depositing negative amount of money");
+				throw BusinessException("Depositing negative amount of money");
 			this->deposit({amount, _currency});
 		}
 
 		void withdraw(double amount) {
 			if (amount < 0)
-				throw business_error("Withdrawing negative amount of money");
+				throw BusinessException("Withdrawing negative amount of money");
 			_balance -= amount;
 			_history.add(new OperationMixin(interstellarClock().date(),
 				{(-1.0)*amount, _currency}, "WITHDRAWAL"));
@@ -604,7 +613,7 @@ class CheckingAccount : public Account {
 			if (money.currency() == Currency::ENC)
 				withdraw(money.amount());
 			else
-				throw business_error("Wrong currency");
+				throw BusinessException("Wrong currency");
 		}
 };
 
@@ -622,7 +631,7 @@ class CurrencyAccount : public Account {
 			Account(id, bank_id, settings, currency) {}
 	void withdraw(Money money) {
 		if (money.amount() < 0)
-			throw business_error("Withdrawing negative amount of money");
+			throw BusinessException("Withdrawing negative amount of money");
 		_balance -= money.amount(); // razy przelicznik
 		_history.add(new OperationMixin(interstellarClock().date(), 
 			{(-1.0)*money.amount(), money.currency()}, "WITHDRAWAL"));
