@@ -623,6 +623,8 @@ class CheckingAccount : public Account {
 		void withdraw(double amount) {
 			if (amount < 0.001)
 				throw BusinessException("Withdrawing negative amount of money");
+			if (amount > _balance)
+				throw BusinessException("Insufficient balance");
 			_balance -= amount;
 			_history.add(new OperationMixin(interstellarClock().date(),
 				{(-1.0)*amount, _currency}, "WITHDRAWAL"));
