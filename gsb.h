@@ -388,12 +388,12 @@ class Transfer : public Operation {
 	/*
 	* OperationMixin stands for withdrawals, charges and interests
 	*/
-class OperationMixin : public Operation {
+class SimpleOperationMixin : public Operation {
 	protected:
 		Money _money;
 		std::string _oper;		//name of the operation
 	public:
-		OperationMixin(Date date, Money money, std::string oper) :
+		SimpleOperationMixin(Date date, Money money, std::string oper) :
 				Operation(date), _money(money), _oper(oper) {}
 
 		Money money() const { return _money; }
@@ -401,6 +401,20 @@ class OperationMixin : public Operation {
 		virtual void print(std::ostream &os) const {
 			os << std::fixed << std::setprecision(2) << date() << " " << money() << " " << _oper;
 		}
+};
+
+class Withdrawal : public SimpleOperationMixin {
+public:
+  Withdrawal(Date date, Money money) : SimpleOperationMixin(date, money, "WITHDRAWAL") {}
+};
+
+class Charge : public SimpleOperationMixin {
+public:
+  Charge(Date date, Money money) : SimpleOperationMixin(date, money, "CHARGE") {}
+};
+class Interest : public SimpleOperationMixin {
+public:
+  Interest(Date date, Money money) : SimpleOperationMixin(date, money, "INTEREST") {}
 };
 
 class History {
@@ -540,35 +554,33 @@ class Account {
 		virtual void on_month_change() {
 			double interests = _balance * settings.interestRate() / 100;
 			double charges = settings.monthlyCharge();
-			if (interests > 0.001) {
-				_balance += interests;
-				_history.add(new OperationMixin(interstellarClock().date(),
-					{interests, _currency}, "INTEREST"));
-			}
-			if (charges > 0.001) {
-				_balance -= charges;
-				_history.add(new OperationMixin(interstellarClock().date(),
-					{(-1.0)*charges, _currency}, "CHARGE"));
-			}
+
+			if(_balance > 0){
+        _balance += interests;
+        _history.add(new Interest(interstellarClock().date(), {interests, _currency}));
+      }
+      
+			_balance -= charges;
+			_history.add(new Charge(interstellarClock().date(), {(-1.0)*charges, _currency}));
 		}
 		Bank *getBank() {
 			return all_banks_ever()[bank_id];
 		}
 	protected:
-		void receive_transfer(double amount, acc_id_type from,
-				Currency curr, const char *msg = "") {
-			if (amount < 0) {
-				throw BusinessException("We don't revieve negative transfers");
+		void receive_transfer(Money money, acc_id_type from,
+				const char *msg = "") {
+			if (money.amount < 0) {
+				throw BusinessException("We don't receive negative transfers");
 			}
-			_balance += amount; // razy przelicznik
+			_balance += this->getBank().exchangeTable().change(money, _currency);
 			_history.add(new Transfer(interstellarClock().date(), 
-				{amount, curr}, from, _id, msg));
+				money, from, _id, msg));
 			
 		}
 
 	public:
-		void transfer(double amount, acc_id_type to, const char *msg = "") {
-			if (amount > _balance) {
+		void transfer(Money money, acc_id_type to, const char *msg = "") {
+			if (money.amount > _balance) {
 				throw BusinessException("Insufficient balance");
 			}
 
@@ -576,22 +588,38 @@ class Account {
 				to.value2() > all_accounts_ever()[to.value1()].size()) {
 				throw BusinessException("Invalid identifier");
 			}
+			
+			if(money.currency() != currency())
+        throw BusinessException("Wrong currency.");
 	
-			_balance -= amount;
+      Account *target_account = all_accounts_ever()[to.value1()][to.value2()];
+      
+			_balance -= money.amount();
 			try {
-				all_accounts_ever()[to.value1()][to.value2()]->receive_transfer(
-					amount, _id, _currency, msg);
+        if(target_account->currency() == currency()) {
+          // Wysyłamy w walucie konta
+          target_account->receive_transfer(money, _id, msg);
+        } else {
+          // Wysyłamy w ENC
+          auto in_enc = getBank()->exchangeTable().change(money, Currency::ENC);
+          target_account->receive_transfer(in_enc, _id, msg);
+        }
+				
 				_history.add(new Transfer(interstellarClock().date(), 
-					{(-1.0)*amount, _currency}, _id, to, msg));
-				if (settings.transferCharge() > 0.001) {
-					_history.add(new OperationMixin(interstellarClock().date(),
-					{(-1.0)*settings.transferCharge(), _currency}, "CHARGE"));
-					_balance -= settings.transferCharge();
-				}
+					-money, _id, to, msg));
+				_history.add(new Charge(interstellarClock().date(),
+					{(-1.0)*settings.transferCharge(), _currency}));
+				
+        _balance -= settings.transferCharge();
 			} catch (...) {
-				_balance += amount;
+				_balance += money.amount();
+        throw;
 			}
 		}
+		
+		void transfer(double amount, acc_id_type to, const char *msg = "") {
+      transfer({amount, currency()}, to, msg);
+    }
 };
 
 std::ostream &operator<<(std::ostream &os, const Account &acc) {
@@ -612,9 +640,10 @@ class CheckingAccount : public Account {
 			if (money.amount() < 0)
 				throw BusinessException(
 					"Depositing negative number of money!");
+      if(
 			_balance += money.amount(); // razy przelicznik
-			_history.add(new OperationMixin(interstellarClock().date(),
-				money, "DEPOSIT"));
+			_history.add(new Deposit(interstellarClock().date(),
+				moneys));
 		}
 		void deposit(double amount) {
 			this->deposit({amount, _currency});
