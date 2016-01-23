@@ -708,6 +708,8 @@ class Bank : public InterstellarClockObserver {
 			auto *ptr = new CheckingAccount({_id, accounts.size()}, _id, checking_settings);
 			accounts.push_back(ptr);
 			all_accounts_ever()[_id].push_back(ptr);
+			if ((interstellarClock().date() == 0) &&  (interstellarClock().time() == 0))
+				ptr->on_month_change();
 			return *ptr;
 		}
 
@@ -715,6 +717,8 @@ class Bank : public InterstellarClockObserver {
 			auto *ptr = new SavingAccount({_id, accounts.size()}, _id, saving_settings);
 			all_accounts_ever()[_id].push_back(ptr);
 			accounts.push_back(ptr);
+			if ((interstellarClock().date() == 0) &&  (interstellarClock().time() == 0))
+				ptr->on_month_change();
 			return *ptr;
 		}
 
@@ -723,6 +727,8 @@ class Bank : public InterstellarClockObserver {
 				_id, currency, currency_settings);
 			all_accounts_ever()[_id].push_back(ptr);
 			accounts.push_back(ptr);
+			if ((interstellarClock().date() == 0) &&  (interstellarClock().time() == 0))
+				ptr->on_month_change();
 			return *ptr;
 		}
 
