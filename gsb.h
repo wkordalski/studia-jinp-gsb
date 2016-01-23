@@ -17,9 +17,16 @@
 */
 
 class Account;
+class Bank;
+
 
 std::vector<std::vector<Account *> > &all_accounts_ever() {
 	static std::vector<std::vector<Account *> > instance;
+	return instance;
+}
+
+std::vector<Bank *> &all_banks_ever() {
+	static std::vector<Bank *> instance;
 	return instance;
 }
 
@@ -112,7 +119,8 @@ class AccountID {
 		std::size_t value2() const { return _value2; }
 		
 		bool operator==(const AccountID &other) const {
-			return _value1 == other._value1 && _value2 == other._value2;
+			return (_valid && other._valid) &&
+				(_value1 == other._value1 && _value2 == other._value2);
 		}
 
 		bool operator<(const AccountID &other) const {
@@ -797,9 +805,6 @@ public:
 	}
 };
 
-	/*
-	* czy poniższe edity są w porządku?
-	*/
 class GKB {
 private:
 	GKB() = default;
@@ -826,12 +831,12 @@ GKB & gkb() {
 
 Bank & BankApplication::createBank() {
 	all_accounts_ever().push_back(std::vector<Account *>());
-
-	return gkb().add_bank(new Bank( _name, gkb().next_id(),
+	auto ptr = new Bank( _name, gkb().next_id(),
 		checking_account_settings.createAccountSettings(),
 		saving_account_settings.createAccountSettings(),
-		currency_account_settings.createAccountSettings()
-	));
+		currency_account_settings.createAccountSettings());
+	all_banks_ever().push_back(ptr);
+	return gkb().add_bank(ptr);
 }
 
 #endif
