@@ -540,14 +540,16 @@ class Account {
 		virtual void on_month_change() {
 			double interests = _balance * settings.interestRate() / 100;
 			double charges = settings.monthlyCharge();
-
-			_balance += interests;
-			_balance -= charges;
-			
-			_history.add(new OperationMixin(interstellarClock().date(),
-				{interests, _currency}, "INTEREST"));
-			_history.add(new OperationMixin(interstellarClock().date(),
-				{(-1.0)*charges, _currency}, "CHARGE"));
+			if (interests > 0.001) {
+				_balance += interests;
+				_history.add(new OperationMixin(interstellarClock().date(),
+					{interests, _currency}, "INTEREST"));
+			}
+			if (charges > 0.001) {
+				_balance -= charges;
+				_history.add(new OperationMixin(interstellarClock().date(),
+					{(-1.0)*charges, _currency}, "CHARGE"));
+			}
 		}
 		Bank *getBank() {
 			return all_banks_ever()[bank_id];
@@ -614,7 +616,7 @@ class CheckingAccount : public Account {
 		}
 
 		void withdraw(double amount) {
-			if (amount < 0)
+			if (amount < 0.001)
 				throw BusinessException("Withdrawing negative amount of money");
 			_balance -= amount;
 			_history.add(new OperationMixin(interstellarClock().date(),
@@ -642,15 +644,15 @@ class CurrencyAccount : public Account {
 			Currency currency, const AccountSettings &settings) :
 			Account(id, bank_id, settings, currency) {}
 	void withdraw(Money money) {
-		if (money.amount() < 0)
+		if (money.amount() < 0.001)
 			throw BusinessException("Withdrawing negative amount of money");
 		_balance -= money.amount(); // razy przelicznik
 		_history.add(new OperationMixin(interstellarClock().date(), 
 			{(-1.0)*money.amount(), money.currency()}, "WITHDRAWAL"));
 	}
 
-	void withdraw(double amount) {
-
+	void withdraw (double amount) {
+		withdraw({amount, _currency});
 	}
 };
 
