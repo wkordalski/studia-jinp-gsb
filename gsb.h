@@ -1,9 +1,6 @@
 #ifndef _GSB_GSB_HH_
 #define _GSB_GSB_HH_
 
-//#include "beings.hh"
-//#include "planets.hh"
-
 #include <cstddef>
 #include <exception>
 #include <map>
@@ -11,7 +8,6 @@
 #include <string>
 #include <vector>
 #include "interstellarclock.h"
-
 
 /*
 ===========================================================
@@ -75,10 +71,16 @@ class ID {
 		std::size_t value() const { return _value; }
 		
 		bool operator==(const ID &other) const {
+      if(!_valid && !other._valid) return true;
+      if(_valid && !other._valid) return false;
+      if(!_valid && other._valid) return false;
 			return _value == other._value;
 		}
 
 		bool operator<(const ID &other) const {
+      if(!_valid && !other._valid) return false;
+      if(_valid && !other._valid) return false;
+      if(!_valid && other._valid) return true;
 			return _value < other._value;
 		}
 
