@@ -10,7 +10,7 @@ int main(int argc, const char * argv[]) {
     auto& binarius = bynaus().registerCitizen(b0, b1);
 
     // możemy odszukać obywatela, o ile znamy jego identyfikator...
-/*    auto& found = earth().findCitizen(captain.id());
+    auto& found = earth().findCitizen(captain.id());
     try {
         auto& spock = earth().findCitizen("SPOCK-ID");
     } catch (...) {
@@ -77,6 +77,6 @@ int main(int argc, const char * argv[]) {
         // ...powinna zakończyć się wyjątkiem
         ::std::cout << "Account not found" << ::std::endl;
     }
-*/    return 0;
+    return 0;
 }
 

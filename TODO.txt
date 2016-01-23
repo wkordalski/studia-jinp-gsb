@@ -3,7 +3,7 @@
 2) Trzaba je zaimplementować (pamiętaj o sprawdzaniu danych wejściowych)
    W szczególności kwota musi być nieujemna (dodatnia?)
 3) id_type powinien być klasą, coś na wzór
-
+DONE 
 class ID {
 	protected:
 		bool valid = false;

@@ -604,8 +604,6 @@ class CheckingAccount : public Account {
 				money, "DEPOSIT"));
 		}
 		void deposit(double amount) {
-			if (amount < 0)
-				throw BusinessException("Depositing negative amount of money");
 			this->deposit({amount, _currency});
 		}
 

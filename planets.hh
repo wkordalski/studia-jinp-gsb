@@ -6,9 +6,6 @@
 #include <map>
 #include <vector>
 
-class beingNotFoundException : public std::exception {
-	virtual const char * what() { return "Begin not found"; }
-};
 
 class Planet {
 public:
