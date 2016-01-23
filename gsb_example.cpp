@@ -10,14 +10,13 @@ int main(int argc, const char * argv[]) {
     auto& binarius = bynaus().registerCitizen(b0, b1);
 
     // możemy odszukać obywatela, o ile znamy jego identyfikator...
-    auto& found = earth().findCitizen(captain.id());
+/*    auto& found = earth().findCitizen(captain.id());
     try {
         auto& spock = earth().findCitizen("SPOCK-ID");
     } catch (...) {
         // ...jeśli nie istnieje, to zgłaszany jest wyjątek
         ::std::cout << "Spock not found" << ::std::endl;
     }
-
     // nowe banki otwieramy poprzez wniosek do Gwiezdnej Komisji Bankowej
     // hint: wzorzec Builder oraz fluent interface
     // opłaty zawsze w ENC
@@ -61,7 +60,7 @@ int main(int argc, const char * argv[]) {
     binariusCurrency.withdraw({1, Currency::ENC});
     binariusCurrency.withdraw({1.0, Currency::DIL});
 
-    // stan konta rozliczeniowego Picarda
+   // stan konta rozliczeniowego Picarda
     ::std::cout << picardsChecking.balance() << ::std::endl;
     ::std::cout << picardsChecking.history() << ::std::endl;
 
@@ -78,5 +77,6 @@ int main(int argc, const char * argv[]) {
         // ...powinna zakończyć się wyjątkiem
         ::std::cout << "Account not found" << ::std::endl;
     }
-    return 0;
+*/    return 0;
 }
+
