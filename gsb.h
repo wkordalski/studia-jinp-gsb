@@ -667,15 +667,6 @@ class Bank : public InterstellarClockObserver {
 
 		ExchangeTable exchange_table;
 	public:
-		Bank(const Bank &other) :
-			_name(other._name),
-			accounts(other.accounts),
-			_id(other._id),
-			checking_settings(other.checking_settings),
-			saving_settings(other.saving_settings),
-			currency_settings(other.currency_settings) {
-			interstellarClock().registerMonthChangeObserver(this);
-		}
 		Bank(Bank &&other) :
 			_name(std::move(other._name)),
 			accounts(std::move(other.accounts)),
@@ -687,7 +678,7 @@ class Bank : public InterstellarClockObserver {
 				{
 			interstellarClock().registerMonthChangeObserver(this);
 			}
-    /*
+    
 		Bank(std::string name, id_type id,
 			AccountSettings checking, AccountSettings saving, AccountSettings currency) :
 			_name(name), _id(id),
@@ -695,7 +686,6 @@ class Bank : public InterstellarClockObserver {
 				currency_settings(currency) {
 			interstellarClock().registerMonthChangeObserver(this);
 		}
-    */
 
 		~Bank() {
 			for (auto acc : accounts)
