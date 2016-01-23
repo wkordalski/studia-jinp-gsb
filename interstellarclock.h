@@ -9,7 +9,7 @@ using Time = unsigned short;
 
 class InterstellarClockObserver {
 public:
-  virtual void on_month_change() = 0;
+    virtual void on_month_change() = 0;
 };
 
 // Czas międzyplanetarny liczymy z dokładnością do godziny.
@@ -46,7 +46,6 @@ public:
     virtual InterstellarClock& nextMonth();
 
     void registerMonthChangeObserver(InterstellarClockObserver *observer);
-    void unregisterMonthChangeObserver(InterstellarClockObserver *observer);
 
 private:
     // liczba godzin od początku założenia ZFP

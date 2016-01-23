@@ -33,14 +33,10 @@ InterstellarClock& InterstellarClock::nextMonth() {
 }
 
 void InterstellarClock::registerMonthChangeObserver(InterstellarClockObserver *observer) {
-  _on_month_change.insert(observer);
-}
-
-void InterstellarClock::unregisterMonthChangeObserver(InterstellarClockObserver *observer) {
-  _on_month_change.erase(observer);
+    _on_month_change.insert(observer);
 }
 
 InterstellarClock & interstellarClock() {
-  static InterstellarClock instance;
-  return instance;
+    static InterstellarClock instance;
+    return instance;
 }

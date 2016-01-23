@@ -695,7 +695,6 @@ public:
   virtual ~Bank() {
     for (auto acc : accounts)
       delete acc;
-    // interstellarClock().unregisterMonthChangeObserver(this);
   }
 
   ExchangeTable &exchangeTable() { return exchange_table; }
