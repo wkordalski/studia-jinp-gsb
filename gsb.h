@@ -344,6 +344,10 @@ std::ostream & operator<<(std::ostream &os, const Money &money) {
 	return os << std::fixed << std::setprecision(2) << money.amount() << money.currency();
 }
 
+Money operator- (Money money) {
+  return {-money.amount(), money.currency()};
+}
+
 /*
 ===========================================================
 	OPERATION & HISTORY
@@ -415,6 +419,10 @@ public:
 class Interest : public SimpleOperationMixin {
 public:
   Interest(Date date, Money money) : SimpleOperationMixin(date, money, "INTEREST") {}
+};
+class Deposit : public SimpleOperationMixin {
+public:
+  Deposit(Date date, Money money) : SimpleOperationMixin(date, money, "DEPOSIT") {}
 };
 
 class History {
@@ -568,54 +576,10 @@ class Account {
 		}
 	protected:
 		void receive_transfer(Money money, acc_id_type from,
-				const char *msg = "") {
-			if (money.amount < 0) {
-				throw BusinessException("We don't receive negative transfers");
-			}
-			_balance += this->getBank().exchangeTable().change(money, _currency);
-			_history.add(new Transfer(interstellarClock().date(), 
-				money, from, _id, msg));
-			
-		}
+				const char *msg = "");
 
 	public:
-		void transfer(Money money, acc_id_type to, const char *msg = "") {
-			if (money.amount > _balance) {
-				throw BusinessException("Insufficient balance");
-			}
-
-			if (!to.valid() || to.value1() > all_accounts_ever().size() ||
-				to.value2() > all_accounts_ever()[to.value1()].size()) {
-				throw BusinessException("Invalid identifier");
-			}
-			
-			if(money.currency() != currency())
-        throw BusinessException("Wrong currency.");
-	
-      Account *target_account = all_accounts_ever()[to.value1()][to.value2()];
-      
-			_balance -= money.amount();
-			try {
-        if(target_account->currency() == currency()) {
-          // Wysyłamy w walucie konta
-          target_account->receive_transfer(money, _id, msg);
-        } else {
-          // Wysyłamy w ENC
-          auto in_enc = getBank()->exchangeTable().change(money, Currency::ENC);
-          target_account->receive_transfer(in_enc, _id, msg);
-        }
-				
-				_history.add(new Transfer(interstellarClock().date(), 
-					-money, _id, to, msg));
-				_history.add(new Charge(interstellarClock().date(),
-					{(-1.0)*settings.transferCharge(), _currency}));
-				
-        _balance -= settings.transferCharge();
-			} catch (...) {
-				_balance += money.amount();
-        throw;
-			}
-		}
+		void transfer(Money money, acc_id_type to, const char *msg = "");
 		
 		void transfer(double amount, acc_id_type to, const char *msg = "") {
       transfer({amount, currency()}, to, msg);
@@ -640,30 +604,31 @@ class CheckingAccount : public Account {
 			if (money.amount() < 0)
 				throw BusinessException(
 					"Depositing negative number of money!");
-      if(
-			_balance += money.amount(); // razy przelicznik
+      if(money.currency() != currency())
+        throw BusinessException(
+          "Wrong currency");
+			_balance += money.amount();
 			_history.add(new Deposit(interstellarClock().date(),
-				moneys));
+				money));
 		}
 		void deposit(double amount) {
 			this->deposit({amount, _currency});
 		}
 
-		void withdraw(double amount) {
-			if (amount < 0.001)
+		void withdraw(Money money) {
+      if(money.currency() != currency())
+        throw BusinessException("Wrong currency");
+			if (money.amount() < 0)
 				throw BusinessException("Withdrawing negative amount of money");
-			if (amount > _balance)
+			if (money.amount() > _balance)
 				throw BusinessException("Insufficient balance");
-			_balance -= amount;
-			_history.add(new OperationMixin(interstellarClock().date(),
-				{(-1.0)*amount, _currency}, "WITHDRAWAL"));
+			_balance -= money.amount();
+			_history.add(new Withdrawal(interstellarClock().date(),
+				-money));
 		}
 
-		void withdraw(Money money) {
-			if (money.currency() == Currency::ENC)
-				withdraw(money.amount());
-			else
-				throw BusinessException("Wrong currency");
+		void withdraw(double amount) {
+			withdraw({amount, currency()});
 		}
 };
 
@@ -679,17 +644,11 @@ class CurrencyAccount : public Account {
 		CurrencyAccount(acc_id_type id, id_type bank_id,
 			Currency currency, const AccountSettings &settings) :
 			Account(id, bank_id, settings, currency) {}
-	void withdraw(Money money) {
-		if (money.amount() < 0.001)
-			throw BusinessException("Withdrawing negative amount of money");
-		_balance -= money.amount(); // razy przelicznik
-		_history.add(new OperationMixin(interstellarClock().date(), 
-			{(-1.0)*money.amount(), money.currency()}, "WITHDRAWAL"));
-	}
-
-	void withdraw (double amount) {
-		withdraw({amount, _currency});
-	}
+			
+    void withdraw(Money money);
+    void withdraw (double amount) {
+      withdraw({amount, _currency});
+    }
 };
 
 /*
@@ -797,7 +756,6 @@ public:
 
 	BankApplication & name(std::string text) {
 		this->_name = text;
-		// TODO: this->current = nullptr?
 		return *this;
 	}
 
@@ -870,6 +828,72 @@ Bank & BankApplication::createBank() {
 	all_banks_ever().push_back(ptr);
 	gkb().add_bank(ptr);
 	return *ptr;
+}
+
+
+
+
+
+void Account::receive_transfer(Money money, acc_id_type from,
+    const char *msg) {
+  if (money.amount() < 0) {
+    throw BusinessException("We don't receive negative transfers");
+  }
+  _balance += this->getBank()->exchangeTable().change(money, _currency).amount();
+  _history.add(new Transfer(interstellarClock().date(), 
+    money, from, _id, msg));
+  
+}
+
+void Account::transfer(Money money, acc_id_type to, const char *msg) {
+  if (money.amount() > _balance) {
+    throw BusinessException("Insufficient balance");
+  }
+
+  if (!to.valid() || to.value1() > all_accounts_ever().size() ||
+    to.value2() > all_accounts_ever()[to.value1()].size()) {
+    throw BusinessException("Invalid identifier");
+  }
+  
+  if(money.currency() != currency())
+    throw BusinessException("Wrong currency.");
+
+  Account *target_account = all_accounts_ever()[to.value1()][to.value2()];
+  
+  _balance -= money.amount();
+  try {
+    if(target_account->currency() == currency()) {
+      // Wysyłamy w walucie konta
+      target_account->receive_transfer(money, _id, msg);
+    } else {
+      // Wysyłamy w ENC
+      auto in_enc = getBank()->exchangeTable().change(money, Currency::ENC);
+      target_account->receive_transfer(in_enc, _id, msg);
+    }
+    
+    _history.add(new Transfer(interstellarClock().date(), 
+      -money, _id, to, msg));
+    _history.add(new Charge(interstellarClock().date(),
+      {(-1.0)*settings.transferCharge(), _currency}));
+    
+    _balance -= settings.transferCharge();
+  } catch (...) {
+    _balance += money.amount();
+    throw;
+  }
+}
+
+void CurrencyAccount::withdraw(Money money) {
+  if (money.amount() < 0)
+    throw BusinessException("Withdrawing negative amount of money");
+  if(money.currency() != currency() && money.currency() != Currency::ENC)
+    throw BusinessException("Wrong currency");
+  auto local = getBank()->exchangeTable().change(money, currency());
+  if(local.amount() > _balance)
+    throw BusinessException("Insufficient balance");
+  _balance -= local.amount();
+  _history.add(new Withdrawal(interstellarClock().date(), 
+    -money));
 }
 
 #endif
